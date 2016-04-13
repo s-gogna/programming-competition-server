@@ -12,10 +12,13 @@
 
 (def repository-url "https://github.com/wmedrano/programming-competition-server")
 
+(def password-len 3)
+
 (enable-console-print!)
 
 (defn read-file
   [file callback]
+  {:pre [(fn? callback)]}
   (let [reader (js/FileReader.)
         wrapped #(callback (-> %1 .-target .-result))]
     (aset reader "onload" wrapped)
@@ -54,6 +57,7 @@
 
 (defn login!
   [username password]
+  {:pre [(string? username) (string? password)]}
   (go (let [res (<! (http/get "/login"
                               {:query-params {:username username
                                               :password password}}))]
@@ -62,16 +66,18 @@
           (js/alert (-> res :body :error))))))
 
 (defn enter-registration!
-  [username password]
+  [admin-username admin-password]
+  {:pre [(string? admin-username) (string? admin-password)]}
   (go (let [res (<! (http/get "/admin"
-                              {:query-params {:username username
-                                              :password password}}))]
+                              {:query-params {:username admin-username
+                                              :password admin-password}}))]
         (if (-> res :body :authorized)
           (swap! state assoc :registration? true)
           (js/alert (-> res :body :error))))))
 
 (defn register!
   [email username password]
+  {:pre [(string? email) (string? username) (string? password)]}
   (go (let [res (<! (http/post "/register"
                                {:edn-params {:email email
                                              :username username
@@ -85,6 +91,7 @@
 
 (defn submit-problem!
   [username problem code]
+  {:pre [(string? username) (string? problem) (string? code)]}
   (go (let [res (<! (http/post "/submit"
                                {:edn-params {:username username
                                              :problem problem
@@ -234,15 +241,15 @@
      [r-scoreboard]]))
 
 (def valid-chars (mapv char (range 97 123)))
-(defn gen-password []
+(defn gen-password [password-len]
   (string/join (map #(rand-nth valid-chars)
-                    (range 4))))
+                    (range password-len))))
 
 (defn r-registration []
   (let []
     [:div.r-registration
      [:form.form-horizontal
-      {:on-submit #(let [password (gen-password)]
+      {:on-submit #(let [password (gen-password password-len)]
                      (register! (-> "email-register"
                                     js/document.getElementById
                                     .-value)
