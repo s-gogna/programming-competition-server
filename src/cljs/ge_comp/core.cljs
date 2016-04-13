@@ -8,6 +8,8 @@
    [cljs.core.async :refer [<!]]
    [reagent.core :as r :refer [atom]]))
 
+(def scoreboard-refresh-time 10000)
+
 (enable-console-print!)
 
 (defn read-file
@@ -93,7 +95,7 @@
 (if (some? @update-score-interval) (js/clearInterval @update-score-interval))
 (reset! update-score-interval
         (js/setInterval fetch-scoreboard!
-                        10000))
+                        scoreboard-refresh-time))
 
 (defn calc-score
   "Returns a tuple that represents a persons score. Lower is better."

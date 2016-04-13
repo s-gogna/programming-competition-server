@@ -1,16 +1,33 @@
-# ge-comp
+# Deployment
 
-
-## Deployment
-
-Open a terminal and type `lein run`. To change the port, edit the value
-[:figwheel :server-port] inside of `project.clj`.
+Open a terminal and type `lein repl` followed by `(run)`. To change the port, edit the value
+`[:figwheel :server-port]` inside of `project.clj`.
 
 Place problems inside the `problems/` directory. For each problem, have a
 directory that includes a file for input, named `in`, and the target answer,
-named `out`.
+named `out`. Diffing ignores empty lines, and trims white-space at the start and
+end of each line.
 
-Time penalties can be edited in `src/clj/ge_comp/scoreboard.clj`.
+# Configuring
+
+## project.clj
+* port - `:figwheel :server-port`
+
+## ./src/clj/ge_comp/server.clj
+* `admin-username` - username to use for admin. Used when opening the registration page.
+* `admin-password` - Corresponding password for admin.
+* `competition-info` - Misc stuff
+
+## ./src/clj/ge_comp/judge.clj
+* `problem-set` - The valid problems, also add corresponding `in` and `out` file under `./problems/{problem}/` directory.
+* `insecure` - Collection of strings that should not be in the code that is being judged.
+* `time-limit` - Time limit for each problem, in seconds
+* `penalty` - Time penalty for getting the wrong answer, in milliseconds
+
+## ./src/cljs/ge_comp/core.cljs
+* `scoreboard-refresh-time` - How often to refresh the scoreboard, in milliseconds.
+
+# Chestnut Template Readme
 
 ## Development
 
