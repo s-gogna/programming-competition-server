@@ -69,9 +69,10 @@
           (js/alert (-> res :body :error))))))
 
 (defn register!
-  [username password]
+  [email username password]
   (go (let [res (<! (http/post "/register"
-                               {:edn-params {:username username
+                               {:edn-params {:email email
+                                             :username username
                                              :password password}}))
             {:keys [username password error]} (:body res)]
         (if (some? error)
@@ -129,7 +130,7 @@
         contestants (keys scoreboard)
         ordered (sort-by #(calc-score (get scoreboard %1))
                          contestants)]
-    [:div.well.well-sm
+    [:div.r-scoreboard.well.well-sm
      [:h3 "Leaderboard"]
      [:table.table.table-striped.table-hover
       [:thead
@@ -167,25 +168,26 @@
 
 (defn r-submit []
   (let [username @(r/cursor state [:username])]
-    [:form.well.well-sm
-     [:label {:for "problem-submit"}
-      [:h3 "Submit Solution"]]
-     [:input {:type "file"
-              :id "problem-submit"
-              :value nil
-              :on-change (fn [e] (let [f (-> e .-target .-files (.item 0))
-                                       fname (.-name f)
-                                       problem (string/replace fname
-                                                               #"\.cpp"
-                                                               "")
-                                       cback #(submit-problem! username
-                                                               problem
-                                                               %1)]
-                                   (read-file f cback)))}]]))
+    [:div.r-submit
+     [:form.well.well-sm
+      [:label {:for "problem-submit"}
+       [:h3 "Submit Solution"]]
+      [:input {:type "file"
+               :id "problem-submit"
+               :value nil
+               :on-change (fn [e] (let [f (-> e .-target .-files (.item 0))
+                                        fname (.-name f)
+                                        problem (string/replace fname
+                                                                #"\.cpp"
+                                                                "")
+                                        cback #(submit-problem! username
+                                                                problem
+                                                                %1)]
+                                    (read-file f cback)))}]]]))
 
 (defn r-logged-in []
   (let [username @(r/cursor state [:username])]
-    [:div
+    [:div.r-logged-in
      [:h2 "Welcome " username]
      [r-scoreboard]
      [r-submit]
@@ -196,36 +198,38 @@
 
 (defn r-login []
   (let []
-    [:form.form-horizontal
-     {:on-submit #(do (login! (-> "username-input"
-                                  js/document.getElementById
-                                  .-value)
-                              (-> "password-input"
-                                  js/document.getElementById
-                                  .-value))
-                      (.preventDefault %1))}
-     [:fieldset
-      [:legend "Log In"]
-      [:div.form-group
-       [:label.col-lg-2 {:for "username-input"} "username"]
-       [:div.col-lg-10
-        [:input {:type "text" :id "username-input"}]]]
+    [:div.r-login
+     [:form.form-horizontal
+      {:on-submit #(do (login! (-> "username-input"
+                                   js/document.getElementById
+                                   .-value)
+                               (-> "password-input"
+                                   js/document.getElementById
+                                   .-value))
+                       (.preventDefault %1))}
+      [:fieldset
+       [:legend "Log In"]
+       [:div.form-group
+        [:label.col-lg-2 {:for "username-input"} "username"]
+        [:div.col-lg-10
+         [:input {:type "text" :id "username-input"}]]]
        [:div.form-group
         [:label.col-lg-2 {:for "password-input"} "password"]
         [:div.col-lg-10
          [:input {:type "password" :id "password-input"}]]]
-      [:div.form-group
-       [:div.col-lg-10.col-lg-offset-2
-        [:button.btn.btn-primary {:type "submit"}
-         "Log In"]
-        [:button.btn.btn-default {:on-click #(do (enter-registration! (-> "username-input"
-                                                                          js/document.getElementById
-                                                                          .-value)
-                                                                      (-> "password-input"
-                                                                          js/document.getElementById
-                                                                          .-value))
-                                                 (.preventDefault %1))}
-         "Registration Page"]]]]]))
+       [:div.form-group
+        [:div.col-lg-10.col-lg-offset-2
+         [:button.btn.btn-primary {:type "submit"}
+          "Log In"]
+         [:button.btn.btn-default {:on-click #(do (enter-registration! (-> "username-input"
+                                                                           js/document.getElementById
+                                                                           .-value)
+                                                                       (-> "password-input"
+                                                                           js/document.getElementById
+                                                                           .-value))
+                                                  (.preventDefault %1))}
+          "Registration Page"]]]]]
+     [r-scoreboard]]))
 
 (def valid-chars (mapv char (range 97 123)))
 (defn gen-password []
@@ -234,28 +238,38 @@
 
 (defn r-registration []
   (let []
-    [:form.form-horizontal
-     {:on-submit #(let [password (gen-password)]
-                    (register! (-> "username-register"
-                                   js/document.getElementById
-                                   .-value)
-                               password)
-                    (aset (.getElementById js/document "username-register")
-                          "value"
-                          "")
-                    (.preventDefault %1))}
-     [:fieldset
-      [:legend "Registration"]
-      [:div.form-group
-       [:label.col-lg-2 {:for "username-register"} "username"]
-       [:div.col-lg-10
-        [:input {:type "text" :id "username-register"}]]]
-      [:div.form-group
-       [:div.col-lg-10.col-lg-offset-2
-        [:button.btn.btn-primary {:type "submit"} "Register"]
-        [:button.btn.btn-default {:on-click #(do (swap! state assoc :registration? false)
-                                                 (.preventDefault %1))}
-         "Exit"]]]]]))
+    [:div.r-registration
+     [:form.form-horizontal
+      {:on-submit #(let [password (gen-password)]
+                     (register! (-> "email-register"
+                                    js/document.getElementById
+                                    .-value)
+                                (-> "username-register"
+                                    js/document.getElementById
+                                    .-value)
+                                password)
+                     (aset (.getElementById js/document "username-register")
+                           "value"
+                           "")
+                     (aset (.getElementById js/document "email-register")
+                           "value"
+                           "")
+                     (.preventDefault %1))}
+      [:fieldset
+       [:legend "Registration"]
+       [:div.form-group
+        [:label.col-lg-2 {:for "email-register"} "email"]
+        [:div.col-lg-10
+         [:input {:type "text" :id "email-register"}]]
+        [:label.col-lg-2 {:for "username-register"} "username"]
+        [:div.col-lg-10
+         [:input {:type "text" :id "username-register"}]]]
+       [:div.form-group
+        [:div.col-lg-10.col-lg-offset-2
+         [:button.btn.btn-primary {:type "submit"} "Register"]
+         [:button.btn.btn-default {:on-click #(do (swap! state assoc :registration? false)
+                                                  (.preventDefault %1))}
+          "Exit"]]]]]]))
 
 (defn app []
   (let [registration? @(r/cursor state [:registration?])

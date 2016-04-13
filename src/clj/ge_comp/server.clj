@@ -58,11 +58,11 @@
                          :error error})}))
   (POST "/register" req
         (let [body (-> req :body slurp read-string)
-              {:keys [username password]} body
+              {:keys [email username password]} body
               username-available? (not (contains? @users username))
               error (if-not username-available? "Username is not available")]
           (if username-available?
-            (swap! users assoc username {:password password}))
+            (swap! users assoc username {:password password :email email}))
           {:status 200
            :headers {"Content-Type" "application/edn"}
            :body (pr-str {:username username
