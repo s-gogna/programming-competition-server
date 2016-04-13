@@ -10,6 +10,8 @@
 
 (def scoreboard-refresh-time 10000)
 
+(def repository-url "https://github.com/wmedrano/programming-competition-server")
+
 (enable-console-print!)
 
 (defn read-file
@@ -271,6 +273,14 @@
                                                   (.preventDefault %1))}
           "Exit"]]]]]]))
 
+(defn r-footer []
+  (let []
+    [:div.r-footer.well.well-sm
+     [:h4 "Issues or Suggestions?"]
+     [:p
+      "Report them on " [:a {:href repository-url
+                                      :target "_blank"} "github"] "."]]))
+
 (defn app []
   (let [registration? @(r/cursor state [:registration?])
         logged-in? (some? @(r/cursor state [:username]))
@@ -280,6 +290,7 @@
      (cond
        registration? [r-registration]
        logged-in? [r-logged-in]
-       :else [r-login])]))
+       :else [r-login])
+     [r-footer]]))
 
 (r/render [app] (js/document.getElementById "app"))
