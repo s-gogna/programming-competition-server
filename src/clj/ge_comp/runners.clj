@@ -1,7 +1,8 @@
 (ns ge-comp.runners
   (:require
    [clojure.java.shell :refer [sh]]
-   [clojure.string :as string]))
+   [clojure.string :as string])
+  (:gen-class))
 
 (defn- timed-sh
   "The `command` has `time` seconds to complete. If execution is terminated
