@@ -2,6 +2,7 @@
   (:require
    [ge-comp.judge :as judge]
    [clojure.string :as string]
+   [clojure.tools.logging :as log]
    [clojure.java.io :as io]
    [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
    [compojure.route :refer [resources]]
@@ -11,8 +12,6 @@
    [environ.core :refer [env]]
    [ring.adapter.jetty :refer [run-jetty]])
   (:gen-class))
-
-(def log-file "log.txt")
 
 ;; username -> {:password string}
 (defonce users (atom {}))
@@ -73,11 +72,11 @@
               {:keys [username problem code]} body
               timestamp (.getTime (java.util.Date.))
               res (judge/score! username timestamp problem code)]
-          (spit log-file {:username username
-                          :timestamp timestamp
-                          :problem problem
-                          :code-file (backup-str (str problem ".cpp") code)}
-                :append true)
+          (log/info "code submission: "
+                    {:username username
+                     :timestamp timestamp
+                     :problem problem
+                     :code-file (backup-str (str problem ".cpp") code)})
           {:status 200
            :headers {"Content-Type" "application/edn"}
            :body (pr-str {:message res})}))

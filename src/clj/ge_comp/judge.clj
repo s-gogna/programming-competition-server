@@ -1,7 +1,8 @@
 (ns ge-comp.judge
   (:require
    [clojure.java.shell :refer [sh]]
-   [clojure.string :as string]))
+   [clojure.string :as string])
+  (:gen-class))
 
 (defonce scoreboard (atom {}))
 
