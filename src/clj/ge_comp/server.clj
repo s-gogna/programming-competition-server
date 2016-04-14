@@ -70,13 +70,14 @@
                           :error error})}))
   (POST "/submit" req
         (let [body (-> req :body slurp read-string)
-              {:keys [username problem code]} body
+              {:keys [username problem code code-type]} body
               timestamp (.getTime (java.util.Date.))
-              res (judge/score! username timestamp problem code)]
+              res (judge/score! username timestamp problem code code-type)]
           (spit log-file {:username username
                           :timestamp timestamp
                           :problem problem
-                          :code-file (backup-str (str problem ".cpp") code)}
+                          :code-file (backup-str (str problem \. code-type) code)
+                          :res res}
                 :append true)
           {:status 200
            :headers {"Content-Type" "application/edn"}

@@ -90,12 +90,14 @@
                          "password: " password))))))
 
 (defn submit-problem!
-  [username problem code]
-  {:pre [(string? username) (string? problem) (string? code)]}
-  (go (let [res (<! (http/post "/submit"
+  [username fname code]
+  {:pre [(string? username) (string? fname) (string? code)]}
+  (go (let [[problem code-type] (string/split fname #"\.")
+            res (<! (http/post "/submit"
                                {:edn-params {:username username
                                              :problem problem
-                                             :code code}}))
+                                             :code code
+                                             :code-type code-type}}))
             msg (str "Problem: " problem \newline
                      (-> res :body :message))]
         (js/alert msg)
@@ -186,11 +188,8 @@
                :value nil
                :on-change (fn [e] (let [f (-> e .-target .-files (.item 0))
                                         fname (.-name f)
-                                        problem (string/replace fname
-                                                                #"\.cpp"
-                                                                "")
                                         cback #(submit-problem! username
-                                                                problem
+                                                                fname
                                                                 %1)]
                                     (read-file f cback)))}]]]))
 
