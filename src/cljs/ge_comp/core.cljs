@@ -60,20 +60,13 @@
   {:pre [(string? username) (string? password)]}
   (go (let [res (<! (http/get "/login"
                               {:query-params {:username username
-                                              :password password}}))]
-        (if (-> res :body :authorized)
-          (swap! state assoc :username username)
-          (js/alert (-> res :body :error))))))
-
-(defn enter-registration!
-  [admin-username admin-password]
-  {:pre [(string? admin-username) (string? admin-password)]}
-  (go (let [res (<! (http/get "/admin"
-                              {:query-params {:username admin-username
-                                              :password admin-password}}))]
-        (if (-> res :body :authorized)
-          (swap! state assoc :registration? true)
-          (js/alert (-> res :body :error))))))
+                                              :password password}}))
+            {:keys [authorize-error admin]} (:body res)]
+        (if authorize-error
+          (js/alert authorize-error )
+          (if admin
+            (swap! state assoc :registration? true)
+            (swap! state assoc :username username))))))
 
 (defn register!
   [email username password]
@@ -228,15 +221,7 @@
        [:div.form-group
         [:div.col-lg-10.col-lg-offset-2
          [:button.btn.btn-primary {:type "submit"}
-          "Log In"]
-         [:button.btn.btn-default {:on-click #(do (enter-registration! (-> "username-input"
-                                                                           js/document.getElementById
-                                                                           .-value)
-                                                                       (-> "password-input"
-                                                                           js/document.getElementById
-                                                                           .-value))
-                                                  (.preventDefault %1))}
-          "Registration Page"]]]]]
+          "Log In"]]]]]
      [r-scoreboard]]))
 
 (def valid-chars (mapv char (range 97 123)))
@@ -268,7 +253,8 @@
        [:div.form-group
         [:label.col-lg-2 {:for "email-register"} "email"]
         [:div.col-lg-10
-         [:input {:type "text" :id "email-register"}]]
+         [:input {:type "text" :id "email-register"}]]]
+       [:div.form-group
         [:label.col-lg-2 {:for "username-register"} "username"]
         [:div.col-lg-10
          [:input {:type "text" :id "username-register"}]]]

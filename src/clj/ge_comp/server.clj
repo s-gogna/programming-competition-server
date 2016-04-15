@@ -26,6 +26,30 @@
     (spit fname s)
     fname))
 
+(defn- check-admin-login [password]
+  (if (= password admin-password)
+    {:status 200
+     :headers {"Content-Type" "application/edn"}
+     :body (pr-str {:authorize-error nil :admin true})}
+    {:status 200
+     :headers {"Content-Type" "application/edn"}
+     :body (pr-str {:authorize-error "Invalid password" :admin true})}))
+
+(defn- check-login [username password]
+  (let [exists? (contains? @users username)
+        authorized? (and exists? (= (get-in @users [username :password]) password))]
+        (if exists?
+          (if authorized?
+            {:status 200
+             :headers {"Content-Type" "application/edn"}
+             :body (pr-str {:authorize-error nil :admin false})}
+            {:status 200
+             :headers {"Content-Type" "application/edn"}
+             :body (pr-str {:authorize-error "Incorrect Password" :admin false})})
+          {:status 200
+           :headers {"Content-Type" "application/edn"}
+           :body (pr-str {:authorize-error "Username not found" :admin false})})))
+
 (defroutes routes
   (GET "/" _
        {:status 200
@@ -34,27 +58,10 @@
   (GET "/login" req
        (let [query (:query-params req)
              username (get query "username")
-             password (get query "password")
-             exists? (contains? @users username)
-             authorized? (and exists? (= (get-in @users [username :password])
-                                         password))
-             error (cond (not exists?) "username not found."
-                         (not authorized?) "invalid password"
-                         :else nil)]
-         {:status 200
-          :headers {"Content-Type" "application/edn"}
-          :body (pr-str {:authorized authorized? :error error})}))
-  (GET "/admin" req
-       (let [query (:query-params req)
-             username (get query "username")
-             password (get query "password")
-             authorized? (and (= username admin-username)
-                              (= password admin-password))
-             error (if-not authorized? "Unauthorized")]
-         {:status 200
-          :headers {"Content-Type" "application/edn"}
-          :body (pr-str {:authorized authorized?
-                         :error error})}))
+             password (get query "password")]
+             (if (= username admin-username)
+               (check-admin-login password)
+               (check-login username password))))
   (POST "/register" req
         (let [body (-> req :body slurp read-string)
               {:keys [email username password]} body
