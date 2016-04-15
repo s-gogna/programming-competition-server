@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/wmedrano/programming-competition-server.svg?style=svg)](https://circleci.com/gh/wmedrano/programming-competition-server)
+
 # Deployment
 
 Open a terminal and type `lein repl` followed by `(run)`. To change the port, edit the value
