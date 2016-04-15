@@ -6,7 +6,13 @@
 
 (defonce scoreboard (atom {}))
 
-(def problem-set #{"a" "b" "c" "d" "e" "f" "g" "h"})
+(def problem-set
+  (->> "./problems"
+       clojure.java.io/file
+       .listFiles
+       (filter #(.isDirectory %1))
+       (map #(.getName %1))
+       set))
 
 (def time-limit 2) ;; seconds
 
